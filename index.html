@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KIZUNA 盛岡市版（簡易モック）</title>
+  <style>
+    :root {
+      --bg: #f5f6f8;
+      --card: #ffffff;
+      --text: #000000;
+      --muted: #333333;
+      --radius: 12px;
+      --green: #1a5d3a;
+      --blue: #1e4a7a;
+      --gray: #2d3748;
+      --shadow: 0 6px 18px rgba(0,0,0,0.12);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Meiryo", "メイリオ", "Hiragino Kaku Gothic ProN", "ヒラギノ角ゴ ProN W3", "Yu Gothic Medium", "游ゴシック Medium", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      display: flex;
+      justify-content: center;
+      font-size: 18px;
+    }
+    .app { width: 100%; max-width: 440px; padding: 16px 12px 28px; }
+    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    h1 { font-size: 24px; margin: 0; font-weight: 700; color: #000000; }
+    .pill { padding: 8px 12px; border-radius: 999px; background: #d0d5dc; color: #1a1a1a; font-size: 14px; font-weight: 600; }
+    .card { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px; margin-bottom: 14px; overflow: hidden; }
+    label { font-size: 16px; color: #1a1a1a; margin-bottom: 6px; display: block; font-weight: 600; }
+    select, button { width: 100%; padding: 12px 14px; border-radius: 10px; border: 2px solid #4a5568; font-size: 17px; background: #fff; color: #000000; font-weight: 500; }
+    .btn { background: var(--blue); color: #fff; border: none; cursor: pointer; font-weight: 700; font-size: 18px; padding: 14px; }
+    .btn.secondary { background: #e2e8f0; color: #000000; border: 2px solid #4a5568; font-size: 16px; font-weight: 600; }
+    .btn:active { opacity: 0.85; }
+    .dropdown { position: relative; }
+    .dropdown-btn {
+      width: 100%; padding: 12px 14px; border-radius: 10px; border: 2px solid #4a5568;
+      font-size: 17px; background: #fff; color: #000000; text-align: left; cursor: pointer;
+      display: flex; justify-content: space-between; align-items: center; gap: 8px; font-weight: 500;
+    }
+    .dropdown-panel {
+      position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 2px solid #4a5568;
+      border-radius: 10px; box-shadow: var(--shadow); padding: 12px; margin-top: 6px; z-index: 5;
+      display: none; max-height: 240px; overflow-y: auto;
+    }
+    .dropdown.open .dropdown-panel { display: block; }
+    .dropdown-item { display: flex; align-items: center; gap: 10px; padding: 8px 4px; font-size: 16px; cursor: pointer; color: #000000; }
+    .dropdown-item input { width: 20px; height: 20px; }
+    .tabs { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 14px; }
+    .tab { padding: 12px 14px; border-radius: 12px; text-align: center; font-weight: 700; border: 2px solid #4a5568; background: #fff; cursor: pointer; font-size: 17px; color: #000000; }
+    .tab.active { background: #000000; color: #fff; border-color: #000000; }
+    .event { display: grid; gap: 8px; }
+    .badge { display: inline-flex; align-items: center; gap: 6px; padding: 8px 12px; border-radius: 999px; font-size: 15px; color: #fff; font-weight: 700; }
+    .badge.all { background: var(--green); }
+    .badge.district { background: var(--blue); }
+    .badge.block { background: var(--gray); }
+    .event-title { font-size: 20px; font-weight: 700; margin: 0; color: #000000; }
+    .meta { color: #1a1a1a; font-size: 16px; font-weight: 500; }
+    .place { font-size: 16px; color: #1a1a1a; font-weight: 500; }
+    .chips { display: flex; gap: 10px; flex-wrap: wrap; }
+    .chip { padding: 8px 10px; border-radius: 10px; background: #e2e8f0; color: #1a1a1a; font-size: 14px; font-weight: 600; }
+    .actions { display: flex; gap: 10px; margin-top: 4px; }
+    .calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-top: 10px; }
+    .cal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; gap: 6px; width: 100%; box-sizing: border-box; }
+    .cal-head .btn.secondary { padding: 6px 8px; font-size: 13px; width: 55px; flex-shrink: 0; white-space: nowrap; }
+    .cal-head > div { font-size: 20px; font-weight: 700; color: #000000; text-align: center; line-height: 1.3; flex: 1 1 0; min-width: 0; overflow: hidden; }
+    .month-year { display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 0; }
+    .month-year .year { font-size: 16px; font-weight: 700; color: #000000; }
+    .month-year .month { font-size: 20px; font-weight: 700; color: #000000; }
+    .weekday { text-align: center; font-size: 15px; color: #1a1a1a; font-weight: 700; padding: 8px 0; }
+    .day { min-height: 85px; padding: 6px 2px; border-radius: 10px; background: #fff; border: 2px solid #d0d5dc; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 4px; cursor: pointer; transition: background 0.2s; }
+    .day:hover { background: #f0f4f8; }
+    .day.selected { background: #e3f2fd; border-color: var(--blue); }
+    .day.out { background: #f8f9fa; color: #9aa5b1; border-color: #e2e8f0; }
+    .day-num { font-weight: 700; font-size: 18px; color: #000000; }
+    .day.out .day-num { color: #9aa5b1; }
+    .calendar-legend { text-align: center; font-size: 15px; color: #1a1a1a; font-weight: 600; margin-bottom: 10px; padding: 8px; background: #f0f4f8; border-radius: 8px; border: 1px solid #d0d5dc; }
+    .calendar-legend span { margin: 0 10px; }
+    .calendar-legend .legend-blue { color: var(--blue); font-weight: 700; }
+    .calendar-legend .legend-red { color: #dc3545; font-weight: 700; }
+    .day-event-counts { display: flex; flex-direction: column; align-items: center; gap: 2px; margin-top: 2px; }
+    .event-count-blue { color: var(--blue); font-size: 20px; font-weight: 700; line-height: 1.1; }
+    .event-count-red { color: #dc3545; font-size: 20px; font-weight: 700; line-height: 1.1; }
+    .day-events-list { margin-top: 12px; display: none; width: 100%; padding: 0 12px; }
+    .day-events-list.show { display: block; }
+    .day-events-list .event-card { background: #fff; border: 2px solid #4a5568; border-radius: 10px; padding: 12px; margin-bottom: 10px; }
+    .day-events-list .event-title { font-size: 18px; font-weight: 700; color: #000000; margin: 0 0 6px 0; }
+    .day-events-list .event-meta { font-size: 15px; color: #1a1a1a; margin: 4px 0; }
+    .btn-register { background: var(--blue); color: #fff; border: none; cursor: pointer; font-weight: 700; font-size: 16px; padding: 10px 16px; border-radius: 8px; margin-top: 10px; width: 100%; }
+    .btn-register.registered { background: #dc3545; }
+    .btn-register:hover { opacity: 0.9; }
+    .empty { text-align: center; color: #1a1a1a; padding: 20px 0; font-size: 17px; font-weight: 500; }
+    .footer-note { text-align: center; color: #1a1a1a; font-size: 14px; margin-top: 12px; font-weight: 500; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <h1>盛岡市イベント案内</h1>
+      <span class="pill">デモ表示</span>
+    </header>
+
+    <div class="tabs">
+      <div class="tab active" data-tab="calendar">カレンダー</div>
+      <div class="tab" data-tab="list">リスト</div>
+    </div>
+
+    <section id="calendarView">
+      <div class="card">
+        <div class="cal-head">
+          <button class="btn secondary" id="prevMonth">前月</button>
+          <div id="monthLabel"></div>
+          <button class="btn secondary" id="nextMonth">翌月</button>
+        </div>
+        <div id="calendarLegend" class="calendar-legend"></div>
+        <div class="calendar" id="calendarGrid"></div>
+      </div>
+      <div id="dayEventsList" class="day-events-list"></div>
+    </section>
+
+    <section id="eventList" style="display:none;"></section>
+
+    <section class="card">
+      <div class="filter-grid">
+        <div>
+          <label>地域包括支援センター（任意）</label>
+          <select id="centerSelect">
+            <option value="">未選択</option>
+            <option value="イーハトーブ地域包括支援センター">イーハトーブ地域包括支援センター</option>
+          </select>
+        </div>
+        <div>
+          <label>コミュニティ推進地区（必須）</label>
+          <select id="districtSelect">
+            <option value="仙北">仙北</option>
+            <option value="本宮">本宮</option>
+            <option value="太田">太田</option>
+            <option value="つなぎ">つなぎ</option>
+          </select>
+        </div>
+        <div id="blockSelectContainer">
+          <label>町名（複数可）</label>
+          <div class="dropdown" id="blockDropdown">
+            <button type="button" class="dropdown-btn" id="blockDropdownBtn">
+              <span id="blockSummary">全選択</span>
+              <span aria-hidden="true">▼</span>
+            </button>
+            <div class="dropdown-panel" id="blockOptions"></div>
+          </div>
+          <small style="color:#1a1a1a;font-size:14px;font-weight:500;">最上段「全選択」で当該地区の全町名を対象</small>
+        </div>
+        <button class="btn" id="applyBtn">適用</button>
+      </div>
+    </section>
+
+    <div class="footer-note">画面幅360-440px想定（Androidスマホ）</div>
+  </div>
+
+  <script>
+    const centerSelect = document.getElementById("centerSelect");
+    const districtSelect = document.getElementById("districtSelect");
+    const blockSelectContainer = document.getElementById("blockSelectContainer");
+    const blockDropdown = document.getElementById("blockDropdown");
+    const blockDropdownBtn = document.getElementById("blockDropdownBtn");
+    const blockOptions = document.getElementById("blockOptions");
+    const blockSummary = document.getElementById("blockSummary");
+    const applyBtn = document.getElementById("applyBtn");
+    const tabs = document.querySelectorAll(".tab");
+    const eventList = document.getElementById("eventList");
+    const calendarView = document.getElementById("calendarView");
+    const monthLabel = document.getElementById("monthLabel");
+    const calendarGrid = document.getElementById("calendarGrid");
+    const calendarLegend = document.getElementById("calendarLegend");
+    const prevMonth = document.getElementById("prevMonth");
+    const nextMonth = document.getElementById("nextMonth");
+    const dayEventsList = document.getElementById("dayEventsList");
+    let selectedDate = null;
+
+    // 盛岡市全30地区
+    const ALL_DISTRICTS = [
+      "西厨川", "桜城", "仁王", "上田", "米内", "山岸", "松園", "緑ヶ丘",
+      "城南", "中野", "簗川", "加賀野", "杜陵", "大慈寺", "青山", "東厨川",
+      "土淵", "北厨川", "みたけ", "仙北", "本宮", "太田", "つなぎ", "見前",
+      "乙部", "飯岡", "巻堀姫神", "好摩", "渋民", "玉山薮川"
+    ];
+
+    const BLOCKS = {
+      仙北: ["全選択","1 仙北一丁目","2 仙北二丁目","3 仙北三丁目","4 東仙北一丁目","5 東仙北二丁目","6 南仙北一丁目","7 南仙北二丁目","8 南仙北三丁目","9 西仙北一丁目","10 西仙北二丁目"],
+      本宮: ["全選択","1 本宮一～七丁目","2 向中野一～七丁目","3 本宮字石仏","4 本宮字上越場","5 本宮字水門","6 本宮字大柳","7 本宮字小林","8 本宮字林崎","9 本宮字大宮","10 本宮字久保筋","11 本宮字小幅","12 本宮字鬼柳","13 本宮字野古","14 本宮字松幅","15 本宮字小板小瀬","16 本宮字蛇屋敷","17 向中野字細谷地","18 向中野字道明","19 向中野字東道明","20 向中野字幅","21 向中野字鶴子","22 向中野字新田","23 向中野字石川町","24 下鹿妻字長持","25 下鹿妻字辻屋敷","26 下鹿妻字西田","27 下鹿妻字前田","28 下鹿妻字南田","29 下鹿妻字下通","30 下鹿妻字北"],
+      太田: ["全選択","1 猪去字","2 上鹿妻字","3 中太田字","4 下太田字","5 上太田字"],
+      つなぎ: ["全選択","1 繋字堂ケ沢","2 繋字尾入野","3 繋字山根","4 繋字北ノ浦","5 繋字北久保","6 繋字下猿田","7 繋字除キ","8 繋字萪内沢","9 繋字舘市","10 繋字塗沢","11 繋字湯ノ舘","12 繋字清水端","13 繋字猿田"],
+    };
+
+    let selectedBlocks = ["全選択"];
+    let currentMonth = new Date(2025, 2, 1); // 2025-03 表示（デモ用）
+
+    // センターに紐づく地区マッピング
+    const CENTER_DISTRICTS = {
+      "イーハトーブ地域包括支援センター": ["仙北", "本宮", "太田", "つなぎ"],
+    };
+
+    const updateDistrictOptions = () => {
+      const center = centerSelect.value;
+      districtSelect.innerHTML = "";
+      
+      if (!center) {
+        // 未選択の場合：全30地区を表示
+        ALL_DISTRICTS.forEach((d) => {
+          const opt = document.createElement("option");
+          opt.value = d;
+          opt.textContent = d;
+          districtSelect.appendChild(opt);
+        });
+        // 町名選択を非表示
+        blockSelectContainer.style.display = "none";
+      } else {
+        // 選択済みの場合：そのセンターに紐づく地区のみ
+        const districts = CENTER_DISTRICTS[center] || [];
+        // 「全選択」を最初に追加
+        const allOpt = document.createElement("option");
+        allOpt.value = "全選択";
+        allOpt.textContent = "全選択";
+        districtSelect.appendChild(allOpt);
+        // 地区を追加
+        districts.forEach((d) => {
+          const opt = document.createElement("option");
+          opt.value = d;
+          opt.textContent = d;
+          districtSelect.appendChild(opt);
+        });
+        // 初期選択を「全選択」に設定
+        districtSelect.selectedIndex = 0;
+        // 初期選択が「全選択」の場合は町名選択を非表示、それ以外は表示
+        if (districtSelect.value === "全選択") {
+          blockSelectContainer.style.display = "none";
+        } else {
+          blockSelectContainer.style.display = "block";
+          selectedBlocks = ["全選択"];
+          renderBlockOptions();
+        }
+      }
+    };
+
+    const EVENTS = [
+      { id: 1, title: "仙北いきいき体操", center: "イーハトーブ地域包括支援センター", district: "仙北", blocks: ["全選択"], place: "仙北地区活動センター（仮）", date: "3/12(水) 10:00-11:30", start: "2025-03-12", detail: "椅子体操と交流" },
+      { id: 2, title: "本宮カフェ", center: "イーハトーブ地域包括支援センター", district: "本宮", blocks: ["全選択"], place: "本宮地区活動センター（仮）", date: "3/15(土) 14:00-15:30", start: "2025-03-15", detail: "お茶とミニ講話" },
+      { id: 3, title: "太田・健康講話", center: "イーハトーブ地域包括支援センター", district: "太田", blocks: ["全選択"], place: "太田地区活動センター（仮）", date: "3/20(木) 13:30-15:00", start: "2025-03-20", detail: "血圧・栄養のミニ講話" },
+      { id: 4, title: "つなぎ・お茶会", center: "イーハトーブ地域包括支援センター", district: "つなぎ", blocks: ["全選択"], place: "つなぎ公民館（仮）", date: "3/22(土) 13:00-14:30", start: "2025-03-22", detail: "茶話会と軽い体操" },
+      { id: 5, title: "仙北ミニ交流", center: "イーハトーブ地域包括支援センター", district: "仙北", blocks: ["1 仙北一丁目","2 仙北二丁目"], place: "仙北地区活動センター（仮）", date: "3/25(火) 10:00-11:00", start: "2025-03-25", detail: "少人数の交流会" },
+      { id: 6, title: "イーハトーブ地域包括支援センター 全体交流会", center: "イーハトーブ地域包括支援センター", district: "全域", blocks: ["全選択"], place: "仙北地区活動センター", date: "3/28(金) 14:00-16:00", start: "2025-03-28", detail: "仙北・本宮・太田・つなぎの4地区合同の交流会" },
+    ];
+
+    // 参加申し込み状態を管理（イベントIDをキーとする）
+    let registrations = new Set(); // 参加申し込み済みのイベントIDを保持
+
+    const renderBlockOptions = () => {
+      // 町名選択が非表示の場合は何もしない
+      if (blockSelectContainer.style.display === "none") {
+        return;
+      }
+      const district = districtSelect.value;
+      if (!BLOCKS[district]) return;
+      blockOptions.innerHTML = "";
+      BLOCKS[district].forEach((b) => {
+        const item = document.createElement("label");
+        item.className = "dropdown-item";
+        const input = document.createElement("input");
+        input.type = "checkbox";
+        input.value = b;
+        input.checked = selectedBlocks.includes(b);
+        input.addEventListener("change", () => toggleBlock(b));
+        item.appendChild(input);
+        item.appendChild(document.createTextNode(b));
+        blockOptions.appendChild(item);
+      });
+      updateBlockSummary();
+    };
+
+    const toggleBlock = (value) => {
+      if (value === "全選択") {
+        selectedBlocks = ["全選択"];
+      } else {
+        selectedBlocks = selectedBlocks.filter((v) => v !== "全選択");
+        if (selectedBlocks.includes(value)) {
+          selectedBlocks = selectedBlocks.filter((v) => v !== value);
+        } else {
+          selectedBlocks.push(value);
+        }
+        if (!selectedBlocks.length) selectedBlocks = ["全選択"];
+      }
+      renderBlockOptions();
+    };
+
+    const updateBlockSummary = () => {
+      if (selectedBlocks.includes("全選択")) {
+        blockSummary.textContent = "全選択";
+      } else if (selectedBlocks.length === 1) {
+        blockSummary.textContent = selectedBlocks[0];
+      } else {
+        blockSummary.textContent = `${selectedBlocks[0]} 他${selectedBlocks.length - 1}`;
+      }
+    };
+
+    const matchEvent = (ev, center, district, blocks) => {
+      if (center && ev.center !== center) return false;
+      
+      // イベントが「全域」対象の場合
+      if (ev.district === "全域") {
+        // 地区が「全選択」の場合は表示
+        if (district === "全選択") return true;
+        // 特定の地区が選ばれている場合も表示（全域イベントなので）
+        const centerDistricts = CENTER_DISTRICTS[center] || [];
+        if (centerDistricts.includes(district)) return true;
+        return false;
+      }
+      
+      // 地区が「全選択」の場合は、そのセンターの全地区のイベントを対象
+      if (district === "全選択") {
+        const centerDistricts = CENTER_DISTRICTS[center] || [];
+        if (!centerDistricts.includes(ev.district)) return false;
+      } else if (district && ev.district !== district) {
+        return false;
+      }
+      
+      // センター未選択で町名選択が非表示の場合は、地区のみでマッチ
+      if (!center || !blockSelectContainer.style.display || blockSelectContainer.style.display === "none") {
+        return true; // 地区が一致していればOK
+      }
+      // センター選択済みの場合は町名もチェック
+      if (blocks.includes("全選択")) return true;
+      return ev.blocks.some((b) => blocks.includes(b) || b === "全選択");
+    };
+
+    const badgeInfo = (ev) => {
+      if (ev.district === "全域") {
+        return { cls: "all", label: "全域", icon: "🌏" };
+      }
+      return { cls: "district", label: ev.district, icon: "📍" };
+    };
+
+    const renderEvents = () => {
+      const center = centerSelect.value;
+      const district = districtSelect.value;
+      eventList.innerHTML = "";
+      const filtered = EVENTS.filter((ev) => matchEvent(ev, center, district, selectedBlocks));
+      if (!filtered.length) {
+        const empty = document.createElement("div");
+        empty.className = "card empty";
+        empty.textContent = "該当するイベントがありません";
+        eventList.appendChild(empty);
+        return;
+      }
+      filtered.forEach((ev, idx) => {
+        const info = badgeInfo(ev);
+        const isRegistered = registrations.has(ev.id);
+        const card = document.createElement("div");
+        card.className = "card event";
+        card.innerHTML = `
+          <div class="badge ${info.cls}">${info.icon} ${info.label}</div>
+          <p class="event-title">${ev.title}</p>
+          <div class="meta">${ev.date}</div>
+          <div class="place">場所: ${ev.place}</div>
+          <div class="chips">
+            <span class="chip">#${idx + 1}</span>
+            <span class="chip">${ev.center}</span>
+          </div>
+          <button class="btn-register ${isRegistered ? 'registered' : ''}" data-event-id="${ev.id}">
+            ${isRegistered ? '✓ 参加申し込み済み' : '参加申し込み'}
+          </button>
+        `;
+        eventList.appendChild(card);
+        
+        // 参加申し込みボタンのイベントリスナー
+        const registerBtn = card.querySelector('.btn-register');
+        registerBtn.addEventListener('click', () => {
+          toggleRegistration(ev.id);
+          renderEvents(); // リストを再描画
+          renderCalendar(); // カレンダーも再描画
+        });
+      });
+    };
+
+    const buildMonthDays = (baseDate) => {
+      const year = baseDate.getFullYear();
+      const month = baseDate.getMonth();
+      const first = new Date(year, month, 1);
+      const startDay = first.getDay();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      const prevMonthDays = new Date(year, month, 0).getDate();
+      const cells = [];
+      for (let i = startDay - 1; i >= 0; i--) cells.push({ date: new Date(year, month - 1, prevMonthDays - i), out: true });
+      for (let d = 1; d <= daysInMonth; d++) cells.push({ date: new Date(year, month, d), out: false });
+      while (cells.length < 42) {
+        const nextDay = cells.length - (startDay + daysInMonth) + 1;
+        cells.push({ date: new Date(year, month + 1, nextDay), out: true });
+      }
+      return cells;
+    };
+
+    const formatMonthLabel = (date) => {
+      const year = date.getFullYear();
+      const month = date.getMonth() + 1;
+      return `<div class="month-year"><div class="year">${year}年</div><div class="month">${month}月</div></div>`;
+    };
+    
+    // 数字を丸数字に変換（1-20まで対応）
+    const toCircledNumber = (num) => {
+      const circled = ['①', '②', '③', '④', '⑤', '⑥', '⑦', '⑧', '⑨', '⑩', '⑪', '⑫', '⑬', '⑭', '⑮', '⑯', '⑰', '⑱', '⑲', '⑳'];
+      if (num >= 1 && num <= 20) {
+        return circled[num - 1];
+      }
+      return num.toString(); // 20を超える場合は通常の数字
+    };
+
+    const toggleRegistration = (eventId) => {
+      if (registrations.has(eventId)) {
+        registrations.delete(eventId);
+      } else {
+        registrations.add(eventId);
+      }
+      // 選択中の日付があれば、その日のイベント一覧を再表示
+      if (selectedDate) {
+        const center = centerSelect.value;
+        const district = districtSelect.value;
+        const filtered = EVENTS.filter((ev) => matchEvent(ev, center, district, selectedBlocks));
+        const iso = selectedDate.toISOString().split("T")[0];
+        const dayEvents = filtered.filter(ev => ev.start === iso);
+        showDayEvents(selectedDate, dayEvents);
+      }
+    };
+
+    const showDayEvents = (date, events) => {
+      // 既存の内容をクリア
+      dayEventsList.innerHTML = "";
+      
+      if (!events || events.length === 0) {
+        dayEventsList.classList.remove("show");
+        return;
+      }
+      
+      const dateStr = `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`;
+      const header = document.createElement("div");
+      header.style.cssText = "font-size: 20px; font-weight: 700; color: #000000; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 2px solid #4a5568;";
+      header.textContent = dateStr;
+      dayEventsList.appendChild(header);
+
+      events.forEach((ev) => {
+        const card = document.createElement("div");
+        card.className = "event-card";
+        const info = badgeInfo(ev);
+        const isRegistered = registrations.has(ev.id);
+        card.innerHTML = `
+          <div class="badge ${info.cls}" style="margin-bottom: 8px;">${info.icon} ${info.label}</div>
+          <div class="event-title">${ev.title}</div>
+          <div class="event-meta">${ev.date}</div>
+          <div class="event-meta">場所: ${ev.place}</div>
+          ${ev.detail ? `<div class="event-meta" style="margin-top: 6px;">${ev.detail}</div>` : ""}
+          <button class="btn-register ${isRegistered ? 'registered' : ''}" data-event-id="${ev.id}">
+            ${isRegistered ? '✓ 参加申し込み済み' : '参加申し込み'}
+          </button>
+        `;
+        dayEventsList.appendChild(card);
+        
+        // 参加申し込みボタンのイベントリスナー
+        const registerBtn = card.querySelector('.btn-register');
+        registerBtn.addEventListener('click', () => {
+          toggleRegistration(ev.id);
+          renderCalendar(); // カレンダーを再描画
+        });
+      });
+      
+      // 表示クラスを追加
+      dayEventsList.classList.add("show");
+      
+      // スクロールして表示領域に持ってくる
+      setTimeout(() => {
+        dayEventsList.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }, 100);
+    };
+
+    const renderCalendar = () => {
+      const center = centerSelect.value;
+      const district = districtSelect.value;
+      const filtered = EVENTS.filter((ev) => matchEvent(ev, center, district, selectedBlocks));
+      const byDay = filtered.reduce((acc, ev) => {
+        acc[ev.start] = acc[ev.start] || [];
+        acc[ev.start].push(ev);
+        return acc;
+      }, {});
+
+      monthLabel.innerHTML = formatMonthLabel(currentMonth);
+      calendarGrid.innerHTML = "";
+      dayEventsList.classList.remove("show");
+      selectedDate = null;
+
+      // 説明を追加
+      calendarLegend.innerHTML = '<span class="legend-blue">上段=案内件数</span><span class="legend-red">下段=参加予定</span>で表示';
+
+      ["日","月","火","水","木","金","土"].forEach((w) => {
+        const wd = document.createElement("div");
+        wd.className = "weekday";
+        wd.textContent = w;
+        calendarGrid.appendChild(wd);
+      });
+
+      const cells = buildMonthDays(currentMonth);
+      cells.forEach((cell) => {
+        const iso = cell.date.toISOString().split("T")[0];
+        const dayDiv = document.createElement("div");
+        const isSelected = selectedDate && selectedDate.toISOString().split("T")[0] === iso;
+        dayDiv.className = `day${cell.out ? " out" : ""}${isSelected ? " selected" : ""}`;
+        dayDiv.innerHTML = `<div class="day-num">${cell.date.getDate()}</div>`;
+        
+        if (!cell.out && byDay[iso] && byDay[iso].length > 0) {
+          const dayEvents = byDay[iso];
+          const totalCount = dayEvents.length;
+          const registeredCount = dayEvents.filter(ev => registrations.has(ev.id)).length;
+          
+          const countsDiv = document.createElement("div");
+          countsDiv.className = "day-event-counts";
+          
+          if (totalCount > 0) {
+            const blueCount = document.createElement("div");
+            blueCount.className = "event-count-blue";
+            blueCount.textContent = toCircledNumber(totalCount);
+            countsDiv.appendChild(blueCount);
+          }
+          
+          if (registeredCount > 0) {
+            const redCount = document.createElement("div");
+            redCount.className = "event-count-red";
+            redCount.textContent = toCircledNumber(registeredCount);
+            countsDiv.appendChild(redCount);
+          }
+          
+          dayDiv.appendChild(countsDiv);
+        }
+        
+        if (!cell.out) {
+          dayDiv.addEventListener("click", () => {
+            // 選択状態の切り替え
+            const prevSelected = document.querySelector(".day.selected");
+            if (prevSelected) {
+              prevSelected.classList.remove("selected");
+            }
+            
+            if (isSelected) {
+              // 同じ日付をクリックした場合は閉じる
+              selectedDate = null;
+              dayEventsList.classList.remove("show");
+              dayDiv.classList.remove("selected");
+            } else {
+              // 新しい日付を選択
+              selectedDate = new Date(cell.date);
+              dayDiv.classList.add("selected");
+              showDayEvents(cell.date, byDay[iso] || []);
+            }
+          });
+        }
+        
+        calendarGrid.appendChild(dayDiv);
+      });
+    };
+
+    centerSelect.addEventListener("change", () => {
+      updateDistrictOptions();
+      renderEvents();
+      renderCalendar();
+    });
+
+    districtSelect.addEventListener("change", () => {
+      const district = districtSelect.value;
+      selectedBlocks = ["全選択"];
+      // 地区が「全選択」の場合は町名選択を非表示
+      if (district === "全選択") {
+        blockSelectContainer.style.display = "none";
+      } else if (blockSelectContainer.style.display !== "none") {
+        renderBlockOptions();
+      }
+    });
+
+    applyBtn.addEventListener("click", () => {
+      renderEvents();
+      renderCalendar();
+    });
+
+    blockDropdownBtn.addEventListener("click", () => {
+      blockDropdown.classList.toggle("open");
+    });
+    document.addEventListener("click", (e) => {
+      if (!blockDropdown.contains(e.target)) blockDropdown.classList.remove("open");
+    });
+
+    prevMonth.addEventListener("click", () => {
+      currentMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1);
+      renderCalendar();
+    });
+    nextMonth.addEventListener("click", () => {
+      currentMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1);
+      renderCalendar();
+    });
+
+    tabs.forEach((tab) => {
+      tab.addEventListener("click", () => {
+        tabs.forEach((t) => t.classList.remove("active"));
+        tab.classList.add("active");
+        const target = tab.dataset.tab;
+        if (target === "list") {
+          eventList.style.display = "block";
+          calendarView.style.display = "none";
+          renderEvents();
+        } else {
+          eventList.style.display = "none";
+          calendarView.style.display = "block";
+          renderCalendar();
+        }
+      });
+    });
+
+    // 初期化
+    updateDistrictOptions();
+    renderBlockOptions();
+    renderEvents();
+    renderCalendar();
+  </script>
+</body>
+</html>
+
+
+
+
+
+
